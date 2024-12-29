@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Подбери платье</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="quest-style.css">
+  <style>
+    #choices {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    .dress {
+      width: 100px;
+      height: 150px;
+      background-size: cover;
+      background-position: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .dress:hover {
+      transform: scale(1.1);
+    }
+
+    .disabled {
+      filter: grayscale(100%);
+      pointer-events: none;
+    }
+
+    /* Модальное окно */
+    #modal-box {
+      display: none;
+      text-align: center;
+      background-color: rgba(0, 0, 0, 0.85);
+      color: white;
+      padding: 40px;
+      border-radius: 15px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70%;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+      text-align: center;
+      font-size: 1.5rem;
+    }
+
+    #modal-box p {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #FFD700; /* Золотой */
+    }
+
+    .next-button {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      background-color: #28a745;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .next-button:hover {
+      background-color: #218838;
+    }
+
+    #particles-js {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+  </style>
+</head>
+<body>
+  <div id="particles-js"></div> <!-- Снег -->
+  <div class="container text-center py-5">
+    <h1 class="display-4">Подбери платье</h1>
+    <p class="fs-5">Как думаешь какое платье я тебе купил ? <br> Выбери то платье, которое по твоему мнению тебе идеально подойдёт !</p>
+
+    <!-- Варианты платьев -->
+    <div id="choices">
+      <div class="dress" id="dress1" style="background-image: url('images/dress1.jpg');"></div>
+      <div class="dress" id="dress2" style="background-image: url('images/dress2.jpg');"></div>
+      <div class="dress" id="dress3" style="background-image: url('images/dress3.jpg');"></div>
+      <div class="dress" id="dress4" style="background-image: url('images/dress4.jpg');"></div>
+      <div class="dress" id="dress5" style="background-image: url('images/dress5.jpg');"></div>
+      <div class="dress" id="dress6" style="background-image: url('images/dress6.jpg');"></div>
+    </div>
+
+    <!-- Модальное окно -->
+    <div id="modal-box">
+      <p>Это платье идеально для тебя! 🎉</p>
+      <p>Обернись, там ждёт сюрприз! 😊</p>
+      <button class="next-button" onclick="nextLevel()">Перейти к следующему квесту</button>
+    </div>
+  </div>
+  <!-- Музыкальный плеер -->
+  <div id="music-player" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <button id="toggle-music" class="btn btn-primary">🎵 Включить музыку</button>
+  </div>
+  
+  <script>
+    const audio = new Audio("mp3/ereymusic — Christmas Lofi Hip Hop (www.lightaudio.ru).mp3"); // Укажите путь к вашему музыкальному файлу
+    audio.loop = true;
+  
+    // Проверяем состояние из localStorage
+    if (localStorage.getItem("music-playing") === "true") {
+      audio.play();
+      document.getElementById("toggle-music").textContent = "⏸️ Остановить музыку";
+    }
+  
+    // Включение/выключение музыки
+    document.getElementById("toggle-music").addEventListener("click", () => {
+      if (audio.paused) {
+        audio.play();
+        localStorage.setItem("music-playing", "true");
+        document.getElementById("toggle-music").textContent = "⏸️ Остановить музыку";
+      } else {
+        audio.pause();
+        localStorage.setItem("music-playing", "false");
+        document.getElementById("toggle-music").textContent = "🎵 Включить музыку";
+      }
+    });
+  
+    // Сохраняем текущее время воспроизведения при переходе
+    window.addEventListener("beforeunload", () => {
+      localStorage.setItem("music-time", audio.currentTime);
+    });
+  
+    // Продолжаем воспроизведение с сохранённого места
+    const savedTime = localStorage.getItem("music-time");
+    if (savedTime) {
+      audio.currentTime = parseFloat(savedTime);
+    }
+  </script>
+    <!-- Подключение particles.min.js -->
+    <script src="js/particles.min.js"></script>
+    <!-- Конфигурация снега -->
+    <script src="js/particles-config.js"></script>
+    <!-- Подключение библиотеки для конфетти -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti"></script>
+  
+
+  <script>
+    const correctDress = "dress3"; // Правильное платье
+    const modalBox = document.getElementById("modal-box");
+
+    // Добавляем события на все платья
+    document.querySelectorAll(".dress").forEach(dress => {
+      dress.addEventListener("click", () => {
+        if (dress.id === correctDress) {
+          dress.style.border = "5px solid #FFD700"; // Золотая рамка
+          triggerConfetti();
+          showModal();
+        } else {
+          dress.classList.add("disabled"); // Неправильное платье становится серым
+        }
+      });
+    });
+
+    // Функция запуска конфетти
+    function triggerConfetti() {
+      confetti({
+        particleCount: 200,
+        spread: 100,
+        origin: { y: 0.6 },
+      });
+    }
+
+    // Показ модального окна
+    function showModal() {
+      setTimeout(() => {
+        modalBox.style.display = "block";
+      }, 1000);
+    }
+
+    // Переход на следующий уровень
+    function nextLevel() {
+      window.location.href = "question3.html"; // Ссылка на следующий уровень
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Квест с фотографиями</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="quest-style.css">
+  <link rel="stylesheet" href="js/particles.css">
+  <style>
+    /* Таймлайн */
+    .timeline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .timeline-item {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 20px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .timeline-item.disabled {
+      background-color: gray;
+      cursor: not-allowed;
+    }
+
+    #modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75); /* Тёмный фон */
+    z-index: 1000;
+  }
+
+  .modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #2c2c2c; /* Лаконичный тёмно-серый цвет */
+    color: white; /* Белый текст */
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    max-width: 600px;
+    text-align: center;
+  }
+    #confetti-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none; /* Чтобы canvas не мешал взаимодействию */
+      z-index: 10;
+    }
+    .modal-content img {
+      width: 150px; /* Ограничение размера фото */
+      height: 150px;
+      margin: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      object-fit: cover;
+      transition: all 0.3s;
+    }
+    .modal-content img.disabled {
+      filter: grayscale(100%);
+      pointer-events: none;
+    }
+
+    #next-quest {
+      margin-top: 20px;
+      display: none;
+    }
+    #particles-js {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+  </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+  <div class="container text-center">
+    <h1 class="mt-4">Квест с фотографиями</h1>
+    <p>Выбери месяц, угадай правильное фото и пройди весь год!</p>
+    <div class="alert alert-info" role="alert">
+      Этот квест состоит из 12 этапов, где каждый этап соответствует месяцу года. В каждом месяце представлены три фотографии, и тебе нужно выбрать ту, которая соответствует этому месяцу. Попробуй пройти весь год и получить доступ к следующему квесту.
+    </div>
+    <!-- Таймлайн -->
+    <div class="timeline" id="timeline">
+      <div class="timeline-item" data-month="january">Январь</div>
+      <div class="timeline-item" data-month="february">Февраль</div>
+      <div class="timeline-item" data-month="march">Март</div>
+      <div class="timeline-item" data-month="april">Апрель</div>
+      <div class="timeline-item" data-month="may">Май</div>
+      <div class="timeline-item" data-month="june">Июнь</div>
+      <div class="timeline-item" data-month="july">Июль</div>
+      <div class="timeline-item" data-month="august">Август</div>
+      <div class="timeline-item" data-month="september">Сентябрь</div>
+      <div class="timeline-item" data-month="october">Октябрь</div>
+      <div class="timeline-item" data-month="november">Ноябрь</div>
+      <div class="timeline-item" data-month="december">Декабрь</div>
+    </div>
+
+    <!-- Модальное окно -->
+    <div id="photo-modal" class="modal">
+      <div class="modal-content">
+        <canvas id="confetti-canvas"></canvas> <!-- Канвас для конфетти -->
+        <h3 id="modal-title">Выбери фото из месяца</h3>
+        <div id="photo-gallery"></div>
+        <p id="feedback" class="mt-3"></p>
+      </div>
+    </div>
+
+    <!-- Кнопка перехода -->
+    <a href="question5.html" id="next-quest" class="btn btn-success">Перейти к следующему квесту</a>
+  </div>
+  <!-- Музыкальный плеер -->
+  <div id="music-player" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <button id="toggle-music" class="btn btn-primary">🎵 Включить музыку</button>
+  </div>
+  
+  <script>
+    const audio = new Audio("mp3/ereymusic — Christmas Lofi Hip Hop (www.lightaudio.ru).mp3"); // Укажите путь к вашему музыкальному файлу
+    audio.loop = true;
+  
+    // Проверяем состояние из localStorage
+    if (localStorage.getItem("music-playing") === "true") {
+      audio.play();
+      document.getElementById("toggle-music").textContent = "⏸️ Остановить музыку";
+    }
+  
+    // Включение/выключение музыки
+    document.getElementById("toggle-music").addEventListener("click", () => {
+      if (audio.paused) {
+        audio.play();
+        localStorage.setItem("music-playing", "true");
+        document.getElementById("toggle-music").textContent = "⏸️ Остановить музыку";
+      } else {
+        audio.pause();
+        localStorage.setItem("music-playing", "false");
+        document.getElementById("toggle-music").textContent = "🎵 Включить музыку";
+      }
+    });
+  
+    // Сохраняем текущее время воспроизведения при переходе
+    window.addEventListener("beforeunload", () => {
+      localStorage.setItem("music-time", audio.currentTime);
+    });
+  
+    // Продолжаем воспроизведение с сохранённого места
+    const savedTime = localStorage.getItem("music-time");
+    if (savedTime) {
+      audio.currentTime = parseFloat(savedTime);
+    }
+  </script>
+  <!-- Подключение Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script>
+    // Данные фотографий
+    const photos = {
+        january: ["photos/march2.jpg", "photos/january1.jpg", "photos/november3.jpg"], // Правильная: january1
+        february: ["photos/june3.jpg", "photos/february1.jpg", "photos/april1.jpg"], // Правильная: february1
+        march: ["photos/july1.jpg", "photos/september2.jpg", "photos/march3.jpg"],    // Правильная: march3
+        april: ["photos/april3.jpg", "photos/october1.jpg", "photos/april1.jpg"],   // Правильная: april1
+        may: ["photos/april1.jpg", "photos/february2.jpg", "photos/may3.jpg"],        // Правильная: may3
+        june: ["photos/september2.jpg", "photos/june1.jpg", "photos/march1.jpg"],   // Правильная: june1
+        july: ["photos/september3.jpg", "photos/may1.jpg", "photos/july3.jpg"],          // Правильная: july3
+        august: ["photos/october1.jpg", "photos/june2.jpg", "photos/august3.jpg"],   // Правильная: august3
+        september: ["photos/november1.jpg", "photos/august3.jpg", "photos/september1.jpg"], // Правильная: september1
+        october: ["photos/october1.jpg", "photos/august2.jpg", "photos/june1.jpg"],         // Правильная: october1
+        november: ["photos/january3.jpg", "photos/march2.jpg", "photos/november1.jpg"],     // Правильная: november1
+        december: ["photos/june3.jpg", "photos/december1.jpg", "photos/february3.jpg"],        // Правильная: december1
+    };
+
+
+    // Правильные ответы
+    const correctAnswers = {
+        january: "photos/january1.jpg",
+        february: "photos/february1.jpg",
+        march: "photos/march3.jpg",
+        april: "photos/april1.jpg",
+        may: "photos/may3.jpg",
+        june: "photos/june1.jpg",
+        july: "photos/july3.jpg",
+        august: "photos/august3.jpg",
+        september: "photos/september1.jpg",
+        october: "photos/october1.jpg",
+        november: "photos/november1.jpg",
+        december: "photos/december1.jpg",
+    };
+
+    const completedMonths = {};
+
+    function showPhotos(month) {
+  if (completedMonths[month]) return; // Если месяц завершён, ничего не делаем
+  const gallery = document.getElementById("photo-gallery");
+  const feedback = document.getElementById("feedback");
+
+  // Сбрасываем галерею и текст обратной связи
+  gallery.innerHTML = "";
+  feedback.innerText = ""; // Очищаем сообщение обратной связи
+
+  // Создаём изображения для модального окна
+  photos[month].forEach((photo) => {
+    const img = document.createElement("img");
+    img.src = photo;
+    img.onclick = (e) => checkAnswer(month, photo, img, e); // Проверяем ответ при клике
+    gallery.appendChild(img);
+  });
+
+  // Устанавливаем заголовок и показываем модальное окно
+  document.getElementById("modal-title").innerText = `Выбери фото из месяца`;
+  document.getElementById("photo-modal").style.display = "flex";
+}
+
+function checkAnswer(month, photo, img, event) {
+  const feedback = document.getElementById("feedback");
+
+  if (photo === correctAnswers[month]) {
+    feedback.innerText = "Правильно!";
+    feedback.style.color = "green";
+
+    // Запуск конфетти
+    triggerConfetti(event.clientX, event.clientY);
+
+    // Закрываем модальное окно через 2 секунды и отмечаем месяц завершённым
+    setTimeout(() => {
+      closeModal();
+      markMonthAsComplete(month);
+    }, 2000);
+  } else {
+    feedback.innerText = "Неправильно! Попробуй снова.";
+    feedback.style.color = "red";
+
+    // Делаем выбранное фото неактивным
+    img.classList.add("disabled");
+    img.onclick = null; // Убираем обработчик клика
+  }
+}
+
+function closeModal() {
+  // Закрываем модальное окно
+  document.getElementById("photo-modal").style.display = "none";
+}
+
+function markMonthAsComplete(month) {
+  const monthButton = document.querySelector(`.timeline-item[data-month="${month}"]`);
+  monthButton.classList.add("disabled"); // Делаем кнопку неактивной
+  completedMonths[month] = true;
+
+  // Проверяем, завершены ли все месяцы
+  if (Object.keys(completedMonths).length === Object.keys(correctAnswers).length) {
+    document.getElementById("next-quest").style.display = "block";
+  }
+}
+
+function triggerConfetti(x, y) {
+  const canvas = document.getElementById("confetti-canvas");
+  const confettiInstance = confetti.create(canvas, { resize: true, useWorker: true });
+
+  // Запускаем конфетти из места клика
+  confettiInstance({
+    particleCount: 100,
+    spread: 120,
+    origin: { x: x / window.innerWidth, y: y / window.innerHeight },
+  });
+}
+
+// Добавляем обработчики событий для кнопок на таймлайне
+document.querySelectorAll(".timeline-item").forEach((button) =>
+  button.addEventListener("click", () => showPhotos(button.dataset.month))
+);
+  </script>
+      <!-- Подключение particles.min.js -->
+      <script src="js/particles.min.js"></script>
+      <!-- Конфигурация снега -->
+      <script src="js/particles-config.js"></script>
+</body>
+</html>

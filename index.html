@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Новогодний квест</title>
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Lobster&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="js/particles.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to bottom, #1e3c72, #2a5298); /* Синий фон */
+    }
+    .bg-container {
+      position: relative;
+      z-index: 1; /* Контент выше снежинок */
+    }
+
+    .dynamic-message {
+      font-size: 1.8rem;
+      font-family: 'Lobster', cursive;
+      color: #FFD700; /* Золотистый цвет */
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+      margin-top: 20px;
+      animation: fadeIn 1.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    .relationship-timer {
+      font-family: 'Open Sans', sans-serif;
+      margin-top: 20px;
+    }
+
+    .relationship-timer h2 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    #relationship-timer {
+      font-weight: bold;
+      color: #ffd700; /* Золотистый текст */
+    }
+  </style>  
+</head>
+<body>
+  <!-- Контейнер для снега -->
+  <div id="particles-js"></div>
+  <!-- Основной контент -->
+  <div class="bg-container">
+    <div class="container text-center text-white py-5">
+      <!-- Заголовок -->
+      <h1 class="display-3 mb-4" style="font-family: 'Lobster', cursive;">Привет, любимая! 🎄</h1>
+      <p class="fs-4" style="font-family: 'Open Sans', sans-serif;">
+        У тебя впереди волшебное приключение. Я приготовил для тебя сюрпризы, но чтобы их получить, тебе нужно пройти квест!
+      </p>
+      <!-- Динамическое сообщение -->
+      <div class="dynamic-message" id="dynamic-message">
+        Пусть это приключение будет ярким! 🎉
+      </div>
+      <!-- Кнопка -->
+      <a href="question1.html" class="btn btn-primary btn-lg mt-4 shadow" style="border-radius: 50px; font-size: 1.5rem;">Начать квест</a>
+      <!-- Таймер отношений -->
+      <div class="relationship-timer text-center text-white mt-4">
+        <h2>Мы вместе уже:</h2>
+        <p id="relationship-timer" style="font-size: 1.5rem;"></p>
+      </div>
+    </div>
+  </div>
+  <!-- Музыкальный плеер -->
+<div id="music-player" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+  <button id="toggle-music" class="btn btn-primary">🎵 Включить музыку</button>
+</div>
+
+<script>
+  const audio = new Audio("mp3/ereymusic — Christmas Lofi Hip Hop (www.lightaudio.ru).mp3"); // Укажите путь к вашему музыкальному файлу
+  audio.loop = true;
+
+  // Проверяем состояние из localStorage
+  if (localStorage.getItem("music-playing") === "true") {
+    audio.play();
+    document.getElementById("toggle-music").textContent = "⏸️ Остановить музыку";
+  }
+
+  // Включение/выключение музыки
+  document.getElementById("toggle-music").addEventListener("click", () => {
+    if (audio.paused) {
+      audio.play();
+      localStorage.setItem("music-playing", "true");
+      document.getElementById("toggle-music").textContent = "⏸️ Остановить музыку";
+    } else {
+      audio.pause();
+      localStorage.setItem("music-playing", "false");
+      document.getElementById("toggle-music").textContent = "🎵 Включить музыку";
+    }
+  });
+
+  // Сохраняем текущее время воспроизведения при переходе
+  window.addEventListener("beforeunload", () => {
+    localStorage.setItem("music-time", audio.currentTime);
+  });
+
+  // Продолжаем воспроизведение с сохранённого места
+  const savedTime = localStorage.getItem("music-time");
+  if (savedTime) {
+    audio.currentTime = parseFloat(savedTime);
+  }
+</script>
+  <!-- Bootstrap Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Подключение particles.min.js -->
+  <script src="js/particles.min.js"></script>
+  <!-- Конфигурация снега -->
+  <script src="js/particles-config.js"></script>
+  <script>
+    // Таймер отношений
+    function calculateRelationshipDuration() {
+      const startDate = new Date('2022-02-22T00:00:00');
+      const now = new Date();
+
+      const diff = now - startDate;
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      const durationText = `${days} дней, ${hours} часов, ${minutes} минут, ${seconds} секунд`;
+
+      document.getElementById('relationship-timer').textContent = durationText;
+    }
+    setInterval(calculateRelationshipDuration, 1000);
+
+    // Динамическое сообщение
+    const messages = [
+      "Пусть это приключение будет ярким! 🎉",
+      "Скоро ты откроешь все сюрпризы! 💝",
+      "Каждый шаг приближает тебя к волшебству! ✨",
+      "Твои усилия принесут счастье! 🌟"
+    ];
+    let currentMessageIndex = 0;
+
+    function updateMessage() {
+      currentMessageIndex = (currentMessageIndex + 1) % messages.length;
+      document.getElementById('dynamic-message').textContent = messages[currentMessageIndex];
+    }
+    setInterval(updateMessage, 5000); // Меняем сообщение каждые 5 секунд
+  </script>
+</body>
+</html>

@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Задания с шифровкой</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="quest-style.css">
+  <style>
+    #target {
+      position: absolute;
+      font-size: 6rem; /* Крупный размер платья */
+      cursor: pointer;
+      display: none;
+      transition: all 0.2s ease; /* Плавное перемещение */
+    }
+
+    .message {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #4CAF50;
+      display: none; /* Сообщение о победе */
+    }
+
+    #particles-js {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    /* Модальное окно */
+    #modal-box {
+      display: none;
+      text-align: center;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 30px;
+      border-radius: 10px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 60%;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+      text-align: center;
+      font-size: 1.5rem;
+    }
+
+    #modal-box p {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #FFD700; /* Золотой цвет */
+    }
+
+    .next-button {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      background-color: #28a745;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .next-button:hover {
+      background-color: #218838;
+    }
+
+    /* Анимация для модального окна */
+    #modal-box .animate {
+      animation: fadeIn 1s ease-out;
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div id="particles-js"></div>
+  <div class="container text-center py-5 text-white" >
+    <h1 class="display-4">Задания с шифровкой</h1>
+
+    <!-- Задания -->
+    <div class="mt-4">
+      <!-- Задание 1 -->
+      <div id="task1">
+        <p class="fs-4">Зашифрованное сообщение 1: <span class="encrypted-word">🎅🎄❄️❄️🎁❤️</span></p>
+        <p class="fs-5">Подсказка: "Каждый символ — это буква. Найди соответствие в таблице ниже и расшифруй слово."</p>
+
+        <!-- Таблица подсказок -->
+        <div class="table-responsive w-50 mx-auto">
+          <table class="table table-bordered text-white">
+            <thead>
+              <tr>
+                <th scope="col">🎅</th>
+                <th scope="col">🎄</th>
+                <th scope="col">❄️</th>
+                <th scope="col">🎁</th>
+                <th scope="col">❤️</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>H</td>
+                <td>A</td>
+                <td>P</td>
+                <td>Y</td>
+                <td>!</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <form onsubmit="return checkAnswer('happy!', 'task1')">
+          <input id="answer1" type="text" class="form-control w-50 mx-auto my-3" placeholder="Введите ответ" required>
+          <button type="submit" class="btn btn-primary btn-lg mt-3">Ответить</button>
+        </form>
+        <p id="error-message1" class="text-danger mt-3" style="display: none;">Неправильный ответ! Попробуй снова!</p>
+      </div>
+
+      <!-- Задание 2 -->
+      <div id="task2" style="display: none;">
+        <p class="fs-4">Задание: Собери слово из хаоса!</p>
+        <p class="fs-5">Подсказка: "Среди хаоса есть слово, которое связывает нас."</p>
+
+        <!-- Контейнер с перемешанными буквами -->
+        <div id="letters-container" class="d-flex flex-wrap justify-content-center mb-4">
+          <!-- Перемешанные буквы (правильные и лишние) -->
+          <div class="draggable-letter text-center mx-2" draggable="true">V</div>
+          <div class="draggable-letter text-center mx-2" draggable="true">E</div>
+          <div class="draggable-letter text-center mx-2" draggable="true">L</div>
+          <div class="draggable-letter text-center mx-2" draggable="true">Z</div>
+          <div class="draggable-letter text-center mx-2" draggable="true">Q</div>
+          <div class="draggable-letter text-center mx-2" draggable="true">X</div>
+          <div class="draggable-letter text-center mx-2" draggable="true">B</div>
+          <div class="draggable-letter text-center mx-2" draggable="true">O</div>
+          <div class="draggable-letter text-center mx-2" draggable="true">!</div>
+          <div class="draggable-letter text-center mx-2" draggable="true">#</div>
+        </div>
+
+        <!-- Поле для сборки слова -->
+        <div id="drop-zone" class="border border-white p-3 text-white" style="min-height: 50px;">
+          Перетащи буквы сюда...
+        </div>
+
+        <button class="btn btn-primary btn-lg mt-3" onclick="checkTask2()">Проверить ответ</button>
+        <p id="error-message2" class="text-danger mt-3" style="display: none;">Неправильно! Попробуй снова!</p>
+      </div>
+
+      <script>
+        const lettersContainer = document.getElementById('letters-container');
+        const dropZone = document.getElementById('drop-zone');
+        let draggedLetter = null;
+
+        // Перетаскивание буквы
+        document.querySelectorAll('.draggable-letter').forEach(letter => {
+          letter.addEventListener('dragstart', (e) => {
+            draggedLetter = e.target;
+          });
+
+          letter.addEventListener('dragend', () => {
+            draggedLetter = null;
+          });
+        });
+
+        // Зона, куда перетаскивают буквы
+        dropZone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          if (draggedLetter) {
+            dropZone.appendChild(draggedLetter); // Перемещение буквы в зону
+          }
+        });
+
+        // Проверка правильного ответа
+        function checkTask2() {
+          const lettersInDropZone = Array.from(dropZone.children).map(letter => letter.textContent).join('');
+          const correctAnswer = 'LOVE';
+          if (lettersInDropZone === correctAnswer) {
+            triggerConfetti();
+            setTimeout(() => {
+              document.getElementById('task2').style.display = 'none';
+              document.getElementById('task3').style.display = 'block';
+            }, 2000);
+          } else {
+            document.getElementById('error-message2').style.display = 'block';
+          }
+        }
+      </script>
+
+      <!-- Задание 3 -->
+      <div id="task3" style="display: none;">
+        <p class="fs-4">Задание: Собери слово из перемешанных букв!</p>
+        <p class="fs-5">Подсказка: "Меняй местами буквы, чтобы составить слово, которое означает мечту."</p>
+
+        <!-- Игровое поле -->
+        <div id="puzzle-container" class="d-flex justify-content-center flex-wrap mb-4" style="max-width: 300px; margin: auto;">
+          <!-- Буквы будут добавлены динамически -->
+        </div>
+
+        <button class="btn btn-primary btn-lg mt-3" onclick="checkTask3()">Проверить ответ</button>
+        <p id="error-message3" class="text-danger mt-3" style="display: none;">Неправильный порядок! Попробуй снова!</p>
+      </div>
+
+      <script>
+        const correctWord = "DREAM";
+        const letters = correctWord.split(""); // Разделяем слово на буквы
+        const shuffledLetters = letters.sort(() => Math.random() - 0.5); // Перемешиваем буквы
+
+        const puzzleContainer = document.getElementById("puzzle-container");
+
+        // Создаём буквы
+        shuffledLetters.forEach((letter, index) => {
+          const letterDiv = document.createElement("div");
+          letterDiv.textContent = letter;
+          letterDiv.classList.add("puzzle-letter", "text-center", "border", "border-white", "mx-1", "my-1", "text-white");
+          letterDiv.style.width = "50px";
+          letterDiv.style.height = "50px";
+          letterDiv.style.lineHeight = "50px";
+          letterDiv.style.cursor = "pointer";
+          letterDiv.style.backgroundColor = "#444";
+          letterDiv.dataset.index = index; // Индекс буквы
+
+          // Событие на клик: выбираем буквы для обмена
+          letterDiv.addEventListener("click", () => selectLetter(letterDiv));
+          puzzleContainer.appendChild(letterDiv);
+        });
+
+        let firstSelectedLetter = null;
+
+        function selectLetter(letterDiv) {
+          // Если нет выбранной буквы
+          if (!firstSelectedLetter) {
+            firstSelectedLetter = letterDiv;
+            letterDiv.style.backgroundColor = "#28a745"; // Подсвечиваем выбранную букву
+          } else {
+            // Меняем буквы местами
+            const temp = firstSelectedLetter.textContent;
+            firstSelectedLetter.textContent = letterDiv.textContent;
+            letterDiv.textContent = temp;
+
+            // Сбрасываем выделение
+            firstSelectedLetter.style.backgroundColor = "#444";
+            firstSelectedLetter = null;
+          }
+        }
+
+        // Проверяем правильность
+        function checkTask3() {
+          const currentWord = Array.from(document.querySelectorAll(".puzzle-letter"))
+            .map(letter => letter.textContent)
+            .join("");
+
+          if (currentWord === correctWord) {
+            triggerConfetti();
+            setTimeout(() => {
+              document.getElementById("task3").style.display = "none";
+              document.getElementById("task4").style.display = "block";
+            }, 2000);
+          } else {
+            document.getElementById("error-message3").style.display = "block";
+          }
+        }
+      </script>
+
+
+      <!-- Задание 4 -->
+      <div id="task4" style="display: none;">
+        <p class="fs-4">Задание: Найди правильный символ!</p>
+        <p class="fs-5">Подсказка: "Выбери символ, который означает верность и вечность."</p>
+
+        <!-- Эмодзи -->
+        <div id="emoji-container" class="d-flex flex-wrap justify-content-center mb-4" style="max-width: 600px; margin: auto; font-size: 3rem;">
+          <!-- Эмодзи будут добавлены динамически -->
+        </div>
+
+        <p id="error-message4" class="text-danger mt-3" style="display: none;">Неправильный выбор! Попробуй снова.</p>
+      </div>
+
+      <script>
+        const emojiContainer = document.getElementById("emoji-container");
+
+        // Список эмодзи с ответами
+        const emojis = [
+          { symbol: "❄️", isCorrect: false },
+          { symbol: "💍", isCorrect: true }, // Символ верности — кольцо
+          { symbol: "🎁", isCorrect: false },
+          { symbol: "⭐", isCorrect: false },
+          { symbol: "❤️", isCorrect: false }
+        ];
+
+        // Генерируем эмодзи
+        emojis.forEach((emoji) => {
+          const emojiElement = document.createElement("div");
+          emojiElement.textContent = emoji.symbol;
+          emojiElement.classList.add("emoji-choice", "m-3", "text-center");
+          emojiElement.style.cursor = "pointer";
+          emojiElement.style.border = "2px solid white";
+          emojiElement.style.borderRadius = "8px";
+          emojiElement.style.width = "80px";
+          emojiElement.style.height = "80px";
+          emojiElement.style.lineHeight = "80px";
+          emojiElement.style.backgroundColor = "#444";
+
+          // Обработка клика на эмодзи
+          emojiElement.addEventListener("click", () => {
+            if (emoji.isCorrect) {
+              emojiElement.style.borderColor = "green";
+              triggerConfetti();
+              setTimeout(() => {
+                document.getElementById("task4").style.display = "none";
+                document.getElementById("task5").style.display = "block";
+              }, 2000);
+            } else {
+              emojiElement.style.borderColor = "red";
+              document.getElementById("error-message4").style.display = "block";
+            }
+          });
+
+          emojiContainer.appendChild(emojiElement);
+        });
+      </script>
+
+      <div id="task5" style="display: none;">
+        <p class="fs-5">Подсказка: "Нажми на кольцо, которое убегает от тебя!"</p>
+
+        <!-- Эмодзи платья -->
+        <div id="target">💍</div>
+
+        <!-- Сообщения -->
+        <p id="message" class="message">Ты поймала кольцо! Молодец!</p>
+
+        <!-- Модальное окно -->
+        <div id="modal-box">
+          <p>Обернись!</p>
+          <button class="next-button" onclick="finishTask()">Перейти к следующему квесту</button>
+        </div>
+
+        <button class="btn btn-primary btn-lg mt-3" onclick="startGame()">Начать игру</button>
+      </div>
+
+      <script src="https://cdn.jsdelivr.net/npm/canvas-confetti"></script>
+
+      <script>
+        const target = document.getElementById("target");
+        const message = document.getElementById("message");
+        const modalBox = document.getElementById("modal-box");
+
+        let gameStarted = false;
+        let targetVisible = false;
+
+        // Начало игры
+        function startGame() {
+          if (!gameStarted) {
+            gameStarted = true;
+            message.style.display = "none"; // Прячем сообщение
+            modalBox.style.display = "none"; // Скрываем модальное окно
+            target.style.display = "block"; // Показываем кольцо
+            moveTarget(); // Двигаем кольцо
+          }
+        }
+
+        // Двигаем платье по экрану
+        function moveTarget() {
+          const maxX = window.innerWidth - target.offsetWidth;
+          const maxY = window.innerHeight - target.offsetHeight;
+
+          // Случайные координаты для платья
+          const randomX = Math.floor(Math.random() * maxX);
+          const randomY = Math.floor(Math.random() * maxY);
+
+          target.style.left = `${randomX}px`;
+          target.style.top = `${randomY}px`;
+
+          // Платье будет показываться на экране и двигаться случайно
+          targetVisible = true;
+
+          // Через 1 секунду будем снова перемещать платье
+          setTimeout(() => {
+            if (targetVisible) {
+              moveTarget(); // Продолжаем двигать платье
+            }
+          }, 500);
+        }
+
+        // Проверка на клик по платью
+        target.addEventListener("click", () => {
+          if (targetVisible) {
+            targetVisible = false;
+            target.style.display = "none"; // Кольцо фиксируется в месте
+            message.style.display = "block"; // Показываем сообщение о победе
+            triggerConfetti(); // Запускаем конфетти
+            showModal(); // Показываем модальное окно
+          }
+        });
+
+        // Функция для запуска конфетти
+        function triggerConfetti() {
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+          });
+        }
+
+        // Показываем модальное окно
+        function showModal() {
+          modalBox.classList.add("animate"); // Добавляем анимацию
+          modalBox.style.display = "block"; // Показываем окно
+        }
+
+        // Завершение игры и переход на следующий квест
+        function finishTask() {
+          window.location.href = "question4.html"; // Переход к следующему квесту
+        }
+      </script>
+  <!-- Музыкальный плеер -->
+  <div id="music-player" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <button id="toggle-music" class="btn btn-primary">🎵 Включить музыку</button>
+  </div>
+  
+  <script>
+    const audio = new Audio("mp3/ereymusic — Christmas Lofi Hip Hop (www.lightaudio.ru).mp3"); // Укажите путь к вашему музыкальному файлу
+    audio.loop = true;
+  
+    // Проверяем состояние из localStorage
+    if (localStorage.getItem("music-playing") === "true") {
+      audio.play();
+      document.getElementById("toggle-music").textContent = "⏸️ Остановить музыку";
+    }
+  
+    // Включение/выключение музыки
+    document.getElementById("toggle-music").addEventListener("click", () => {
+      if (audio.paused) {
+        audio.play();
+        localStorage.setItem("music-playing", "true");
+        document.getElementById("toggle-music").textContent = "⏸️ Остановить музыку";
+      } else {
+        audio.pause();
+        localStorage.setItem("music-playing", "false");
+        document.getElementById("toggle-music").textContent = "🎵 Включить музыку";
+      }
+    });
+  
+    // Сохраняем текущее время воспроизведения при переходе
+    window.addEventListener("beforeunload", () => {
+      localStorage.setItem("music-time", audio.currentTime);
+    });
+  
+    // Продолжаем воспроизведение с сохранённого места
+    const savedTime = localStorage.getItem("music-time");
+    if (savedTime) {
+      audio.currentTime = parseFloat(savedTime);
+    }
+  </script>
+  <!-- Подключение particles.min.js -->
+  <script src="js/particles.min.js"></script>
+  <!-- Конфигурация снега -->
+  <script src="js/particles-config.js"></script>
+  <!-- Подключение библиотеки для конфетти -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti"></script>
+
+  <script>
+    // Функция для проверки правильности ответа
+    function checkAnswer(correctAnswer, taskId) {
+      const userAnswer = document.getElementById("answer" + taskId.charAt(taskId.length - 1)).value.trim().toLowerCase();
+      if (userAnswer === correctAnswer) {
+        triggerConfetti();
+        setTimeout(() => {
+          document.getElementById(taskId).style.display = "none";
+          const nextTask = 'task' + (parseInt(taskId.charAt(taskId.length - 1)) + 1);
+          const nextTaskElement = document.getElementById(nextTask);
+
+          if (nextTaskElement) {
+            nextTaskElement.style.display = "block";
+          } else {
+            // Если больше заданий нет, показываем task5
+            document.getElementById("task5").style.display = "block";
+            document.getElementById("moving-word").style.display = "block"; // Показываем слово
+          }
+        }, 2000);
+        return false;
+      } else {
+        document.getElementById("error-message" + taskId.charAt(taskId.length - 1)).style.display = "block";
+        return false;
+      }
+    }
+
+    // Функция запуска конфетти
+    function triggerConfetti() {
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+    }
+
+  </script>
+</body>
+</html>

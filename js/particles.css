@@ -1,0 +1,7 @@
+#particles-js {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: 2; /* Слой для снежинок */
+    pointer-events: none; /* Снег не будет перехватывать клики */
+  }

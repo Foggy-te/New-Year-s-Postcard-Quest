@@ -1,0 +1,30 @@
+/* Фон */
+.bg-container {
+  background: linear-gradient(to bottom, #1e3c72, #2a5298); /* Градиент фона */
+  min-height: 100vh; /* Высота экрана */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Текст */
+h1, p {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Тень для текста */
+}
+
+/* Кнопка */
+.btn-primary {
+  background-color: #ff4757; /* Красный цвет */
+  border: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 10px rgba(255, 71, 87, 0.5); /* Подсветка кнопки */
+}
+
+/* Шрифт для текста */
+body {
+  font-family: 'Open Sans', sans-serif;
+}
